@@ -56,9 +56,10 @@ count = 0
 all_generations = []
 # with open('generations.pkl', 'ab') as file:
 for datapoint in tqdm.tqdm(data['train'].shuffle(seed=42)):
-    generation = {}
-    generation["input"] = datapoint["input"]
-    generation["instruction"] = datapoint["instruction"]
+    generation = {
+        "input": datapoint["input"],
+        "instruction": datapoint["instruction"],
+    }
     # first, truncate input; this will handle. the weird tokenization issues
     datapoint['input'] = tokenizer.decode(tokenizer.encode(datapoint['input'], truncation=True, max_length=3500))
     prompt = prompter.generate_prompt(datapoint["instruction"], datapoint["input"])
@@ -73,33 +74,17 @@ for datapoint in tqdm.tqdm(data['train'].shuffle(seed=42)):
     inputs = tokenizer.convert_ids_to_tokens(tokenizer.encode(prompt, truncation=False))
     with torch.autocast("cuda"):
         with torch.no_grad():
-            # Generate Review of Systems
-            if "Review of Systems" in datapoint['instruction']:
-                output = generator.generate_batch(
-                    [inputs],
-                    **generation_config
-                )
-            # Generate all other sections
-            else:
-                output = generator.generate_batch(
-                    [inputs],
-                    **generation_config
-                )
-
+            output = generator.generate_batch(
+                [inputs],
+                **generation_config
+            )
             # dumb hack for first forward pass
             if count==0:
                 print("rerunning first")
-                if "Review of Systems" in datapoint['instruction']:
-                    output = generator.generate_batch(
-                        [inputs],
-                        **generation_config
-                    )
-                # Generate all other sections
-                else:
-                    output = generator.generate_batch(
-                        [inputs],
-                        **generation_config
-                    )
+                output = generator.generate_batch(
+                    [inputs],
+                    **generation_config
+                )
             count += 1
 
             result = tokenizer.decode(output[0].sequences_ids[0])
@@ -127,13 +112,13 @@ def stitch_items_all_split(strings):
     # Chunk the strings into groups of 5
     for i in range(0, len(strings), 5):
         chunk = strings[i:i+5]
-        
-        temp = ""
-        # For each string in the chunk, associate it with a section
-        for section, string in zip(sections, chunk):
-            temp += f"{section}\n{string}\n\n"
+
+        temp = "".join(
+            f"{section}\n{string}\n\n"
+            for section, string in zip(sections, chunk)
+        )
         output.append(temp.strip())
-    
+
     return output
 
 
@@ -142,12 +127,10 @@ def combine_adjacent_strings(strings_list):
     if len(strings_list) % 2 != 0:
         raise ValueError("The list of strings should have an even number of elements")
 
-    combined_list = []
-    for i in range(0, len(strings_list), 2):
-        combined_string = strings_list[i] + '\n\n' + strings_list[i+1]
-        combined_list.append(combined_string)
-    
-    return combined_list
+    return [
+        strings_list[i] + '\n\n' + strings_list[i + 1]
+        for i in range(0, len(strings_list), 2)
+    ]
 
 
 # combined_output = combine_adjacent_strings(all_outputs)

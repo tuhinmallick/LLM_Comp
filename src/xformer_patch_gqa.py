@@ -55,7 +55,7 @@ def xformers_forward(
     else:
         query_states = self.q_proj(hidden_states)
         key_states = self.k_proj(hidden_states)
-        value_states = self.v_proj(hidden_states) 
+        value_states = self.v_proj(hidden_states)
     query_states = (
         query_states
         .view(bsz, q_len, self.num_heads, self.head_dim)
@@ -155,7 +155,10 @@ def xformers_forward(
     if self.pretraining_tp > 1:
         attn_output = attn_output.split(self.hidden_size // self.pretraining_tp, dim=2)
         o_proj_slices = self.o_proj.weight.split(self.hidden_size // self.pretraining_tp, dim=1)
-        attn_output = sum([F.linear(attn_output[i], o_proj_slices[i]) for i in range(self.pretraining_tp)])
+        attn_output = sum(
+            F.linear(attn_output[i], o_proj_slices[i])
+            for i in range(self.pretraining_tp)
+        )
     else:
         attn_output = self.o_proj(attn_output)
     return attn_output, attn_weights, past_key_value

@@ -15,11 +15,9 @@ platypus_ds = platypus_ds.to_list()
 
 def present_in_platypus(given_data):
     return any(
-        [
-            data["instruction"] == given_data["instruction"]
-            and data["input"] == given_data["input"]
-            for data in platypus_ds
-        ]
+        data["instruction"] == given_data["instruction"]
+        and data["input"] == given_data["input"]
+        for data in platypus_ds
     )
 
 
@@ -45,7 +43,9 @@ def filter_openbookqa():
 
     openbookqa_ds = load_dataset("openbookqa")["test"].to_list()
     for oa in openbookqa_ds:
-        if any([oa["question_stem"] in data["instruction"] for data in platypus_ds]):
+        if any(
+            oa["question_stem"] in data["instruction"] for data in platypus_ds
+        ):
             print(oa["question_stem"])
 
 

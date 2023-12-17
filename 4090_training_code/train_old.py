@@ -594,7 +594,7 @@ class SupervisedDataset(Dataset):
         elif "oasst1" in data_path:
             train_dataset = load_dataset("timdettmers/openassistant-guanaco")
             train_dataset = train_dataset['train']
-            sources = [tokenizer.bos_token for example in train_dataset]
+            sources = [tokenizer.bos_token for _ in train_dataset]
             targets = [f"{example['text']}{tokenizer.eos_token}" for example in train_dataset]
         elif "platypus" in data_path.lower():
             train_dataset = load_dataset("garage-bAInd/Open-Platypus")
@@ -616,7 +616,7 @@ class SupervisedDataset(Dataset):
                     list_data_dict = pickle.load(fp)
             # list_data_dict = utils.jload(data_path)
             if logits_path is not None:
-                with open(logits_path+"/all_indices.pkl", "rb") as fp:
+                with open(f"{logits_path}/all_indices.pkl", "rb") as fp:
                     train_indices = pickle.load(fp)
                 list_data_dict = [list_data_dict[i] for i in train_indices]
             logging.warning("Formatting inputs...")
@@ -643,9 +643,15 @@ class SupervisedDataset(Dataset):
     def __getitem__(self, i) -> Dict[str, torch.Tensor]:
         ret = preprocess([self.sources[i]], [self.targets[i]], self.tokenizer)
         if self.logits_path is not None:
-            teacher_logits_indices = torch.load(self.logits_path+"/logits_indices_"+str(i)+".pt")
-            teacher_logits_values = torch.load(self.logits_path+"/logits_values_"+str(i)+".pt")
-            teacher_logits_shape = torch.load(self.logits_path+"/logits_shape_"+str(i)+".pt")
+            teacher_logits_indices = torch.load(
+                f"{self.logits_path}/logits_indices_{str(i)}.pt"
+            )
+            teacher_logits_values = torch.load(
+                f"{self.logits_path}/logits_values_{str(i)}.pt"
+            )
+            teacher_logits_shape = torch.load(
+                f"{self.logits_path}/logits_shape_{str(i)}.pt"
+            )
             teacher_logits = torch.sparse_coo_tensor(teacher_logits_indices, teacher_logits_values, teacher_logits_shape)
             teacher_logits = teacher_logits.to_dense()
             return dict(

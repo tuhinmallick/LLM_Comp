@@ -3,7 +3,7 @@ from typing import List
 import random
 import re
 from nltk.tokenize import word_tokenize
-FEMALE_WORDS: List[str] = list([
+FEMALE_WORDS: List[str] = [
     "she",
     "daughter",
     "hers",
@@ -24,10 +24,10 @@ FEMALE_WORDS: List[str] = list([
     "aunts",
     "niece",
     "nieces",
-])
+]
 
 
-MALE_WORDS: List[str] = list([
+MALE_WORDS: List[str] = [
     "he",
     "son",
     "his",
@@ -48,8 +48,8 @@ MALE_WORDS: List[str] = list([
     "uncles",
     "nephew",
     "nephews",
-])
-ASIAN_NAMES= list([
+]
+ASIAN_NAMES = [
     "cho",
     "wong",
     "tang",
@@ -70,9 +70,9 @@ ASIAN_NAMES= list([
     "khan",
     "singh",
     "hong",
-])
+]
 
-HISPANIC_NAMES = list([
+HISPANIC_NAMES = [
     "castillo",
     "gomez",
     "soto",
@@ -89,9 +89,9 @@ HISPANIC_NAMES = list([
     "garcia",
     "castro",
     "cruz",
-])
+]
 
-WHITE_NAMES = list([
+WHITE_NAMES = [
     "harris",
     "nelson",
     "robinson",
@@ -112,7 +112,7 @@ WHITE_NAMES = list([
     "wilson",
     "martin",
     "johnson",
-])
+]
 name2idx = {}
 WHITE_NAMES = [name.title() for name in WHITE_NAMES]
 HISPANIC_NAMES = [name.title() for name in HISPANIC_NAMES]
@@ -124,15 +124,9 @@ ALL_GENDER_NAMES = MALE_WORDS+FEMALE_WORDS
 race_lis = [ASIAN_NAMES, HISPANIC_NAMES, WHITE_NAMES]
 def postprocess(input, change_gender = False):
 
-    names_lis = []
-    for name in ALL_NAMES:
-        if name in input:
-            names_lis.append(name)
-    gender_lis = []
-    for word in ALL_GENDER_NAMES:
-        if word in input:
-            gender_lis.append(word)
-    if len(names_lis) > 0:
+    names_lis = [name for name in ALL_NAMES if name in input]
+    gender_lis = [word for word in ALL_GENDER_NAMES if word in input]
+    if names_lis:
         print("Previous input is: ", input)
         print(names_lis)
         for name in names_lis:
@@ -162,24 +156,25 @@ def postprocess(input, change_gender = False):
                 if newinput==input:
                     break
                 else:
-                    input=newinput 
+                    input=newinput
     if change_gender:
         print(gender_lis)
-        if len(gender_lis)> 0:
+        if gender_lis:
             for name in gender_lis:
                 newinput=None
                 while True:
                     name_replace = random.choice([0,1])
-                    if name_replace == 0:
-                        if name in MALE_WORDS:
-                            name_replace = name
-                        else:
-                            name_replace = MALE_WORDS[FEMALE_WORDS.index(name)]
+                    if (
+                        name_replace == 0
+                        and name in MALE_WORDS
+                        or name_replace != 0
+                        and name in FEMALE_WORDS
+                    ):
+                        name_replace = name
+                    elif name_replace == 0:
+                        name_replace = MALE_WORDS[FEMALE_WORDS.index(name)]
                     else:
-                        if name in FEMALE_WORDS:
-                            name_replace = name
-                        else:
-                            name_replace = FEMALE_WORDS[MALE_WORDS.index(name)] 
+                        name_replace = FEMALE_WORDS[MALE_WORDS.index(name)]
                     pattern = r"([\s.,;!?']+)" + re.escape(name) + r"([\s.,;!?']+)"
                     newinput = re.sub(pattern, r'\1' + name_replace + r'\2', input, 1)
                     if newinput==input:

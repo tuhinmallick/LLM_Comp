@@ -13,10 +13,9 @@ scienceqa_questions = set()
 for idx, row in tqdm(scienceqa.iterrows(), total=scienceqa.shape[0]):
     ques = row['question']
     choices = row['choices']
-    choicestr=""
-    
-    for i in range(len(choices)):
-        choicestr+=f"\n{choiceletters[i]}: {choices[i]}"
+    choicestr = "".join(
+        f"\n{choiceletters[i]}: {choices[i]}" for i in range(len(choices))
+    )
     fullques = ques+choicestr
     scienceqa_questions.add(fullques)
 for idx,row in tqdm(platypus.iterrows(), total=platypus.shape[0]):
@@ -24,12 +23,11 @@ for idx,row in tqdm(platypus.iterrows(), total=platypus.shape[0]):
     if ques in scienceqa_questions:
         retained.append(row)
 print(len(retained))
-retained_json = []
-for row in retained:
-    retained_json.append((row.input, row.output, row.instruction))
-all_platypus = []
-for idx,row in platypus.iterrows():
-    all_platypus.append((row.input, row.output, row.instruction))
+retained_json = [(row.input, row.output, row.instruction) for row in retained]
+all_platypus = [
+    (row.input, row.output, row.instruction)
+    for idx, row in platypus.iterrows()
+]
 import json
 def row_to_json(row):
     input_col, output_col, instruction_col = row
@@ -54,21 +52,16 @@ for folder in os.listdir(path):
         dic = json.load(open(os.path.join(path,folder,file)))
         all_rows.append(dic)
 
-problems = []
-for row in all_rows:
-    problems.append(row['problem'])
-    
+problems = [row['problem'] for row in all_rows]
 problems = set(problems)
 retained = []
 for idx,row in tqdm(platypus.iterrows(), total=platypus.shape[0]):
     ques = row['instruction']
     if ques in problems:
         retained.append(row)
-        
+
 print(len(retained))
-retained_json = []
-for row in retained:
-    retained_json.append((row.input, row.output, row.instruction))
+retained_json = [(row.input, row.output, row.instruction) for row in retained]
 import json
 def row_to_json(row):
     input_col, output_col, instruction_col = row

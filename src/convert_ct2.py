@@ -36,8 +36,6 @@ def main(
 
     base_path = "meta-llama/Llama-2-13b-chat-hf"
     weights_path = "/home/mrigankraman/filestore-ai/mrigank/output_llama_13b_presidio/checkpoint-11123"
-    tokenizer_path = "tokenizer"
-
     merged_weights_model_path = "merged_weights_llama2-13b-chat"
     ct2_target_path = f"/home/mrigankraman/filestore-ai/llama2-13b-chat-chkpt-{checkpoint_number}-merge_{str(merge_format).replace('.','_')}-ct2-{compilation_format}"
 
@@ -66,6 +64,8 @@ def main(
     if to_test:
         durations = []
         model_ct2 = ctranslate2.Generator(ct2_target_path, device="cuda")
+        tokenizer_path = "tokenizer"
+
         tokenizer = AutoTokenizer.from_pretrained(tokenizer_path)
         conversation = "Okay. How are you doing?  Well I am really tired.  Ahh yes your eyes are quite red as well.  How is your breathing?  Very bad i am short of breath often.  That is a shame to hear.  I hope you enjoy going to your sons baseball tournament.  Where is it?  Just in a local town called Johnston Village its about 10 minutes away.  My dad died at 55 of a heart attack.  My mom is in remission for breast cancer for 2 years. Do you smoke? yes i do. you should stop! so should you!  One pack a day for a year? That is really going to catch up to you"
 

@@ -124,13 +124,13 @@ def stitch_items_all_split(strings):
     # Chunk the strings into groups of 5
     for i in range(0, len(strings), 5):
         chunk = strings[i:i+5]
-        
-        temp = ""
-        # For each string in the chunk, associate it with a section
-        for section, string in zip(sections, chunk):
-            temp += f"{section}\n{string}\n\n"
+
+        temp = "".join(
+            f"{section}\n{string}\n\n"
+            for section, string in zip(sections, chunk)
+        )
         output.append(temp.strip())
-    
+
     return output
 
 
@@ -139,12 +139,10 @@ def combine_adjacent_strings(strings_list):
     if len(strings_list) % 2 != 0:
         raise ValueError("The list of strings should have an even number of elements")
 
-    combined_list = []
-    for i in range(0, len(strings_list), 2):
-        combined_string = strings_list[i] + '\n\n' + strings_list[i+1]
-        combined_list.append(combined_string)
-    
-    return combined_list
+    return [
+        strings_list[i] + '\n\n' + strings_list[i + 1]
+        for i in range(0, len(strings_list), 2)
+    ]
 
 
 combined_output = combine_adjacent_strings(all_outputs)

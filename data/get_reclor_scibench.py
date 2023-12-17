@@ -37,9 +37,10 @@ for idx, row in tqdm(reclor.iterrows(), total=reclor.shape[0]):
     context = row['context'].strip()
     ques = row['question'].strip()
     choices = row['answers']
-    choicestr=""
-    for i in range(len(choices)):
-        choicestr+=f"\n{choiceletters[i]}: {choices[i].strip()}"
+    choicestr = "".join(
+        f"\n{choiceletters[i]}: {choices[i].strip()}"
+        for i in range(len(choices))
+    )
     fullques = f"{context} {ques}{choicestr}"
     #matching = [s for s in instrs if "In rheumatoid arthritis" in s]
     #print(fullques == matching[0])
@@ -58,10 +59,7 @@ for idx,row in tqdm(platypus.iterrows(), total=platypus.shape[0]):
         retained.append(row)
 
 print(len(retained))
-retained_json = []
-for row in retained:
-    retained_json.append((row.input, row.output, row.instruction))
-
+retained_json = [(row.input, row.output, row.instruction) for row in retained]
 import json
 def row_to_json(row):
     input_col, output_col, instruction_col = row
@@ -87,7 +85,7 @@ subjects = ['atkins', 'atkins_sol', 'calculus', 'calculus_sol', 'chemmc', 'chemm
 
 for subject in subjects:
     file_path = f"./scibench/dataset/original/{subject}.json"
-    
+
     # Check if the file exists
     if os.path.exists(file_path):
         with open(file_path, encoding='utf-8') as json_file:
@@ -117,11 +115,9 @@ for idx,row in tqdm(platypus.iterrows(), total=platypus.shape[0]):
     ques = row['instruction']
     if ques in scibench_questions:
         retained.append(row)
-        
+
 print(len(retained))
-retained_json = []
-for row in retained:
-    retained_json.append((row.input, row.output, row.instruction))
+retained_json = [(row.input, row.output, row.instruction) for row in retained]
 import json
 def row_to_json(row):
     input_col, output_col, instruction_col = row

@@ -11,7 +11,9 @@ def get_arb_data():
     response = requests.get("https://advanced-reasoning-benchmark.netlify.app/api/lib/math/numerical")
     math_data = response.json()
     for ques in math_data:
-        actual_response = requests.get("https://advanced-reasoning-benchmark.netlify.app/api/lib/math/numerical/{}".format(ques['_id']))
+        actual_response = requests.get(
+            f"https://advanced-reasoning-benchmark.netlify.app/api/lib/math/numerical/{ques['_id']}"
+        )
         actual_response = actual_response.json()
         full_q = actual_response['Problem_Statement']
         arb_questions.add(full_q)
@@ -21,9 +23,10 @@ def get_arb_data():
     law_data = response.json()
     for ques in law_data:
         q = ques['Problem Statement']
-        choicestr = ""
-        for idx, option in enumerate(ques['Answer Candidates']):
-            choicestr += f"\n{chr(ord('A') + idx)}. {option}"
+        choicestr = "".join(
+            f"\n{chr(ord('A') + idx)}. {option}"
+            for idx, option in enumerate(ques['Answer Candidates'])
+        )
         full_q = q + choicestr
         arb_questions.add(full_q)
 
@@ -32,9 +35,10 @@ def get_arb_data():
     mcat_data = response.json()
     for ques in mcat_data:
         q = ques['Problem Statement']
-        choicestr = ""
-        for idx, option in enumerate(ques['Answer Candidates']):
-            choicestr += f"\n{chr(ord('A') + idx)}. {option}"
+        choicestr = "".join(
+            f"\n{chr(ord('A') + idx)}. {option}"
+            for idx, option in enumerate(ques['Answer Candidates'])
+        )
         full_q = q + choicestr
         arb_questions.add(full_q)
 

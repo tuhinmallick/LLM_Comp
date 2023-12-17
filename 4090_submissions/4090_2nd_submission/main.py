@@ -148,11 +148,13 @@ class SentenceTransformer:
         return tokens.to(self.device)  
 
     def get_dataloader(self, sentences, batch_size=32):
-        sentences = ["Represent this sentence for searching relevant passages: " + x for x in sentences]
+        sentences = [
+            f"Represent this sentence for searching relevant passages: {x}"
+            for x in sentences
+        ]
         dataset = Dataset.from_dict({"text": sentences})
         dataset.set_transform(self.transform)
-        dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
-        return dataloader
+        return DataLoader(dataset, batch_size=batch_size, shuffle=False)
 
     def encode(self, sentences, show_progress_bar=False, batch_size=32):
         dataloader = self.get_dataloader(sentences, batch_size=batch_size)
@@ -164,8 +166,7 @@ class SentenceTransformer:
                 e = self.model(**batch).pooler_output
                 e = F.normalize(e, p=2, dim=1)
                 embeddings.append(e.detach().cpu().numpy())
-        embeddings = np.concatenate(embeddings, axis=0)
-        return embeddings
+        return np.concatenate(embeddings, axis=0)
     
 # faiss_index = faiss.read_index(FAISS_MODEL_PATH + '/faiss.index')
 # wiki_dataset = load_from_disk(WIKI_DATASET_PATH)
@@ -192,9 +193,9 @@ async def process_request(input_data: ProcessRequest) -> ProcessResponse:
         first_match = wiki_dataset[int(search_index[0][0])]['text']
 
         preprompt = "Below is a task, as a potential aid to your answer, background context from Wikipedia articles is at your disposal, even if they might not always be relevant. Write a response that appropriately completes the request. \n"
-        prompt = preprompt+'Context:'+ first_match+'\n'+prompt
+        prompt = f'{preprompt}Context:{first_match}' + '\n' + prompt
     # x = fix_spelling(prompt,max_length=2048)[0]["generated_text"]
-    prompt = re.sub(' +', ' ', prompt) 
+    prompt = re.sub(' +', ' ', prompt)
     # if prompt[-1] != " ":
     #     prompt += " "
     print(input_data.temperature)

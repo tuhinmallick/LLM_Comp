@@ -5,7 +5,7 @@ import re
 import json
 from nltk.tokenize import word_tokenize
 random.seed(42)
-FEMALE_WORDS: List[str] = list([
+FEMALE_WORDS: List[str] = [
     "she",
     "daughter",
     "hers",
@@ -26,10 +26,10 @@ FEMALE_WORDS: List[str] = list([
     "aunts",
     "niece",
     "nieces",
-])
+]
 
 
-MALE_WORDS: List[str] = list([
+MALE_WORDS: List[str] = [
     "he",
     "son",
     "his",
@@ -50,8 +50,8 @@ MALE_WORDS: List[str] = list([
     "uncles",
     "nephew",
     "nephews",
-])
-ASIAN_NAMES= list([
+]
+ASIAN_NAMES = [
     "cho",
     "wong",
     "tang",
@@ -72,9 +72,9 @@ ASIAN_NAMES= list([
     "khan",
     "singh",
     "hong",
-])
+]
 
-HISPANIC_NAMES = list([
+HISPANIC_NAMES = [
     "castillo",
     "gomez",
     "soto",
@@ -91,9 +91,9 @@ HISPANIC_NAMES = list([
     "garcia",
     "castro",
     "cruz",
-])
+]
 
-WHITE_NAMES = list([
+WHITE_NAMES = [
     "harris",
     "nelson",
     "robinson",
@@ -114,7 +114,7 @@ WHITE_NAMES = list([
     "wilson",
     "martin",
     "johnson",
-])
+]
 name2idx = {}
 WHITE_NAMES = [name.title() for name in WHITE_NAMES]
 HISPANIC_NAMES = [name.title() for name in HISPANIC_NAMES]
@@ -142,21 +142,13 @@ postprocess_pattern  = re.compile(r"([\s.,;!?']+|^)" + '('+'|'.join(ALL_NAMES)+'
 
 def postprocess(input, change_gender = False):
 
-    # names_lis = []
-    # for name in ALL_NAMES:
-    #     if name in input:
-    #         names_lis.append(name)
-    gender_lis = []
-    for word in ALL_GENDER_NAMES:
-        if word in input:
-            gender_lis.append(word)
-
+    gender_lis = [word for word in ALL_GENDER_NAMES if word in input]
     curindex = 0
-    
+
     newinput=None
     while True:
         name_replace = random.choice(ALL_NAMES)
-        
+
         # name_replace="<UNK>"
         # name_to_replace = random.randint(0,len(race_lis[race_replace])-1)
         # exp = re.compile(re.escape(name), re.IGNORECASE)
@@ -168,40 +160,39 @@ def postprocess(input, change_gender = False):
         # print(name, race_lis[race_replace][name_to_replace])
         # print()
         # sys.exit(0)
-        
+
         input_left, input_right = input[:curindex],input[curindex:]
         match = re.search(postprocess_pattern, input_right)
-        if match is not None:
-            idx = match.end()
-            name = match.group(2)
-            newinput_right = re.sub(postprocess_pattern, r'\1' + name_replace + r'\3', input_right, 1)
-            idx += len(name_replace) - len(name)
-            curindex = len(input_left) + idx
-            newinput = input_left + newinput_right
-            if newinput==input:
-                break
-            else:
-                input=newinput
-        else:
+        if match is None:
             break
 
+        idx = match.end()
+        name = match.group(2)
+        newinput_right = re.sub(postprocess_pattern, r'\1' + name_replace + r'\3', input_right, 1)
+        idx += len(name_replace) - len(name)
+        curindex = len(input_left) + idx
+        newinput = input_left + newinput_right
+        if newinput==input:
+            break
+        else:
+            input=newinput
     if change_gender:
-        # print(gender_lis)
-        if len(gender_lis)> 0:
+        if gender_lis:
             for name in gender_lis:
                 newinput=None
                 while True:
                     name_replace = random.choice([0,1])
-                    if name_replace == 0:
-                        if name in MALE_WORDS:
-                            name_replace = name
-                        else:
-                            name_replace = MALE_WORDS[FEMALE_WORDS.index(name)]
+                    if (
+                        name_replace == 0
+                        and name in MALE_WORDS
+                        or name_replace != 0
+                        and name in FEMALE_WORDS
+                    ):
+                        name_replace = name
+                    elif name_replace == 0:
+                        name_replace = MALE_WORDS[FEMALE_WORDS.index(name)]
                     else:
-                        if name in FEMALE_WORDS:
-                            name_replace = name
-                        else:
-                            name_replace = FEMALE_WORDS[MALE_WORDS.index(name)] 
+                        name_replace = FEMALE_WORDS[MALE_WORDS.index(name)]
                     pattern = r"([\s.,;!?']+)" + re.escape(name) + r"([\s.,;!?']+)"
                     newinput = re.sub(pattern, r'\1' + name_replace + r'\2', input, 1)
                     if newinput==input:
